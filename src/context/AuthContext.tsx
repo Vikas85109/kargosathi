@@ -1,60 +1,53 @@
-import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
-import type { SessionUser } from '../types';
-import * as api from '../services/api';
+import { createContext, useContext, useState, type ReactNode } from 'react';
+import type { UserRole } from '../types';
+import { users } from '../mock/data';
 
-interface State {
-  user: SessionUser | null;
-  loading: boolean;
+interface AuthState {
+  isAuthenticated: boolean;
+  role: UserRole | null;
+  userName: string;
+  userId: string;
 }
 
-type Action =
-  | { type: 'SET_USER'; user: SessionUser | null }
-  | { type: 'LOADED' };
-
-interface AuthContextValue extends State {
-  loginBroker: (phone: string, name: string) => Promise<void>;
-  loginAdmin: (username: string, password: string) => Promise<void>;
+interface AuthContextValue extends AuthState {
+  login: (role: UserRole) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'SET_USER':
-      return { ...state, user: action.user, loading: false };
-    case 'LOADED':
-      return { ...state, loading: false };
-    default:
-      return state;
-  }
-}
+const roleUserMap: Record<UserRole, string> = {
+  broker: 'U001',
+  shipper: 'U002',
+  transporter: 'U003',
+  driver: 'U004',
+  admin: 'U005',
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, { user: null, loading: true });
+  const [state, setState] = useState<AuthState>({
+    isAuthenticated: false,
+    role: null,
+    userName: '',
+    userId: '',
+  });
 
-  useEffect(() => {
-    const saved = api.getSession();
-    dispatch({ type: 'SET_USER', user: saved });
-  }, []);
-
-  const loginBroker = async (phone: string, name: string) => {
-    const user = await api.loginBroker(phone, name);
-    dispatch({ type: 'SET_USER', user });
-  };
-
-  const loginAdmin = async (username: string, password: string) => {
-    const user = await api.loginAdmin(username, password);
-    dispatch({ type: 'SET_USER', user });
+  const login = (role: UserRole) => {
+    const user = users.find((u) => u.id === roleUserMap[role]);
+    setState({
+      isAuthenticated: true,
+      role,
+      userName: user?.name ?? role,
+      userId: user?.id ?? '',
+    });
   };
 
   const logout = () => {
-    api.logout();
-    dispatch({ type: 'SET_USER', user: null });
+    setState({ isAuthenticated: false, role: null, userName: '', userId: '' });
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, loginBroker, loginAdmin, logout }}>
+    <AuthContext.Provider value={{ ...state, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

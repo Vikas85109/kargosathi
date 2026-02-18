@@ -1,42 +1,46 @@
-import { createContext, useCallback, useContext, useReducer, type ReactNode } from 'react';
-import type { Toast, ToastType } from '../types';
+import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 
-interface State {
-  toasts: Toast[];
+type ToastType = 'success' | 'error' | 'info' | 'warning';
+
+interface Toast {
+  id: string;
+  type: ToastType;
+  message: string;
 }
-
-type Action =
-  | { type: 'ADD'; toast: Toast }
-  | { type: 'REMOVE'; id: string };
 
 const ToastContext = createContext<{
   toasts: Toast[];
   toast: (type: ToastType, message: string) => void;
 } | null>(null);
 
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'ADD':
-      return { toasts: [...state.toasts, action.toast] };
-    case 'REMOVE':
-      return { toasts: state.toasts.filter((t) => t.id !== action.id) };
-    default:
-      return state;
-  }
-}
-
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, { toasts: [] });
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
   const toast = useCallback((type: ToastType, message: string) => {
-    const id = `toast-${Date.now()}-${Math.random()}`;
-    dispatch({ type: 'ADD', toast: { id, type, message } });
-    setTimeout(() => dispatch({ type: 'REMOVE', id }), 3500);
+    const id = `t-${Date.now()}`;
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500);
   }, []);
 
   return (
-    <ToastContext.Provider value={{ toasts: state.toasts, toast }}>
+    <ToastContext.Provider value={{ toasts, toast }}>
       {children}
+      {/* Toast container */}
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={`animate-slide-in px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${
+              t.type === 'success' ? 'bg-emerald-600' :
+              t.type === 'error' ? 'bg-red-600' :
+              t.type === 'warning' ? 'bg-amber-600' :
+              'bg-blue-600'
+            }`}
+          >
+            {t.message}
+          </div>
+        ))}
+      </div>
     </ToastContext.Provider>
   );
 }

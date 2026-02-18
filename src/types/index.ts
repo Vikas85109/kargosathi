@@ -1,90 +1,40 @@
-// ---- Application Status ----
-export type AppStatus =
-  | 'draft'
-  | 'submitted'
-  | 'under_review'
-  | 'approved'
-  | 'rejected'
-  | 'correction_required';
+export type UserRole = 'broker' | 'shipper' | 'transporter' | 'driver' | 'admin';
 
-// ---- Auth ----
-export type UserRole = 'broker' | 'admin';
-
-export interface SessionUser {
-  name: string;
-  phone?: string;
-  role: UserRole;
-}
-
-// ---- Broker Onboarding Form Data ----
-export interface BasicInfo {
-  name: string;
-  phone: string;
-  email: string;
-  city: string;
-  experience: string;
-}
-
-export interface CompanyInfo {
-  companyName: string;
-  gst: string;
-  pan: string;
-  address: string;
-  businessType: string;
-}
-
-export interface Documents {
-  panFile: string;
-  gstFile: string;
-  aadhaarFile: string;
-  chequeFile: string;
-}
-
-export interface BankDetails {
-  accountName: string;
-  accountNumber: string;
-  ifsc: string;
-  upi: string;
-}
-
-export interface OperatingScope {
-  routes: string[];
-  truckTypes: string[];
-  loadTypes: string[];
-}
-
-export interface CommissionConfig {
-  commissionType: string;
-  commissionPercent: number | string;
-}
-
-export interface BrokerFormData
-  extends BasicInfo,
-    CompanyInfo,
-    Documents,
-    BankDetails,
-    OperatingScope,
-    CommissionConfig {}
-
-// ---- Broker Application (stored) ----
-export interface BrokerApplication extends BrokerFormData {
+export interface User {
   id: string;
-  status: AppStatus;
-  adminRemarks: string;
+  name: string;
+  role: UserRole;
+  email: string;
+  phone: string;
+  company?: string;
+  status: 'active' | 'pending' | 'suspended';
+  kycStatus: 'verified' | 'pending' | 'rejected';
   createdAt: string;
-  updatedAt: string;
 }
 
-// ---- Dashboard Mock Types ----
+export type LoadStatus = 'posted' | 'assigned' | 'in_transit' | 'delivered' | 'cancelled';
+export type TripStatus = 'scheduled' | 'pickup' | 'in_transit' | 'delivered' | 'completed';
+export type PaymentStatus = 'pending' | 'processing' | 'paid' | 'overdue';
+export type DisputeStatus = 'open' | 'investigating' | 'resolved' | 'closed';
+
 export interface Load {
   id: string;
-  from: string;
-  to: string;
+  shipperName: string;
+  shipperId: string;
+  origin: string;
+  destination: string;
+  distance: string;
   weight: string;
-  truck: string;
-  status: 'delivered' | 'in_transit' | 'booked';
-  date: string;
-  amount: number;
+  material: string;
+  truckType: string;
+  rate: number;
+  status: LoadStatus;
+  postedDate: string;
+  deliveryDate: string;
+  assignedTruck?: string;
+  assignedDriver?: string;
+  brokerCommission: number;
+  gstAmount: number;
 }
 
 export interface Truck {
@@ -92,38 +42,103 @@ export interface Truck {
   number: string;
   type: string;
   capacity: string;
+  owner: string;
+  ownerId: string;
   driver: string;
-  status: 'active' | 'idle' | 'maintenance';
+  driverId: string;
+  status: 'available' | 'on_trip' | 'maintenance' | 'inactive';
   location: string;
+  insuranceExpiry: string;
+  fitnessExpiry: string;
+}
+
+export interface TripEvent {
+  status: string;
+  location: string;
+  timestamp: string;
+  note?: string;
+}
+
+export interface Trip {
+  id: string;
+  loadId: string;
+  truckId: string;
+  driverId: string;
+  origin: string;
+  destination: string;
+  status: TripStatus;
+  startDate: string;
+  estimatedDelivery: string;
+  actualDelivery?: string;
+  currentLocation: string;
+  distance: string;
+  shipperName: string;
+  driverName: string;
+  truckNumber: string;
+  material: string;
+  weight: string;
+  rate: number;
+  timeline: TripEvent[];
+}
+
+export interface Invoice {
+  id: string;
+  tripId: string;
+  loadId: string;
+  from: string;
+  to: string;
+  shipperName: string;
+  transporterName: string;
+  baseAmount: number;
+  gst: number;
+  brokerCommission: number;
+  totalAmount: number;
+  status: PaymentStatus;
+  date: string;
+  dueDate: string;
 }
 
 export interface Payment {
   id: string;
-  loadId: string;
+  invoiceId: string;
   amount: number;
-  status: 'paid' | 'pending' | 'processing';
-  date: string;
+  status: PaymentStatus;
   method: string;
+  date: string;
+  reference: string;
 }
 
-export interface DashboardStats {
-  totalLoads: number;
-  activeTrucks: number;
-  totalEarnings: number;
-  pendingPayments: number;
+export interface Dispute {
+  id: string;
+  tripId: string;
+  raisedBy: string;
+  against: string;
+  type: string;
+  description: string;
+  status: DisputeStatus;
+  createdAt: string;
+  resolvedAt?: string;
+  amount?: number;
 }
 
-export interface ChartPoint {
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  read: boolean;
+  timestamp: string;
+}
+
+export interface ChartData {
   month: string;
-  earnings: number;
+  revenue: number;
+  trips: number;
   loads: number;
 }
 
-// ---- Toast ----
-export type ToastType = 'success' | 'error' | 'info';
-
-export interface Toast {
-  id: string;
-  type: ToastType;
-  message: string;
+export interface NavItem {
+  label: string;
+  path: string;
+  icon: string;
 }

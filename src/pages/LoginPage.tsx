@@ -1,91 +1,109 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useBroker } from '../context/BrokerContext';
-import { useToast } from '../context/ToastContext';
+import type { UserRole } from '../types';
+import {
+  Briefcase, PackageSearch, Truck, UserCircle, ShieldCheck,
+  ArrowRight, Zap,
+} from 'lucide-react';
+
+const roles: { role: UserRole; label: string; desc: string; icon: React.ReactNode; color: string; bg: string }[] = [
+  {
+    role: 'broker',
+    label: 'Broker',
+    desc: 'Manage loads, assign trucks, track trips and handle invoices',
+    icon: <Briefcase size={28} />,
+    color: 'text-blue-600',
+    bg: 'bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-300',
+  },
+  {
+    role: 'shipper',
+    label: 'Shipper',
+    desc: 'Post shipments, track deliveries and manage payments',
+    icon: <PackageSearch size={28} />,
+    color: 'text-violet-600',
+    bg: 'bg-violet-50 hover:bg-violet-100 border-violet-200 hover:border-violet-300',
+  },
+  {
+    role: 'transporter',
+    label: 'Transporter',
+    desc: 'Manage fleet, bid on loads and track earnings',
+    icon: <Truck size={28} />,
+    color: 'text-teal-600',
+    bg: 'bg-teal-50 hover:bg-teal-100 border-teal-200 hover:border-teal-300',
+  },
+  {
+    role: 'driver',
+    label: 'Driver',
+    desc: 'View trips, update status and upload proof of delivery',
+    icon: <UserCircle size={28} />,
+    color: 'text-orange-600',
+    bg: 'bg-orange-50 hover:bg-orange-100 border-orange-200 hover:border-orange-300',
+  },
+  {
+    role: 'admin',
+    label: 'Admin',
+    desc: 'Approve users, review KYC, manage platform disputes',
+    icon: <ShieldCheck size={28} />,
+    color: 'text-indigo-600',
+    bg: 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 hover:border-indigo-300',
+  },
+];
 
 export default function LoginPage() {
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [error, setError] = useState('');
-  const { loginBroker } = useAuth();
-  const { getAppByPhone } = useBroker();
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const sendOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!/^\d{10}$/.test(phone)) { setError('Phone must be 10 digits'); return; }
-    setError('');
-    setStep('otp');
-  };
-
-  const verifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp !== '1234') { setError('Invalid OTP. Use 1234'); return; }
-
-    const app = getAppByPhone(phone);
-    const name = app?.name ?? 'Broker';
-    await loginBroker(phone, name);
-    toast('success', `Welcome back, ${name}!`);
-
-    if (app?.status === 'approved') navigate('/dashboard');
-    else if (app) navigate('/status');
-    else navigate('/onboarding');
+  const enter = (role: UserRole) => {
+    login(role);
+    navigate(`/${role}`);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link to="/welcome" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs">KS</div>
-            <span className="font-bold text-slate-800">KargoSathi</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Welcome Back</h1>
-          <p className="text-sm text-slate-500">Login with your registered mobile</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+      {/* Header */}
+      <div className="text-center pt-12 pb-8 px-4">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30">
+            <Zap size={26} className="text-white" />
+          </div>
         </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-          {step === 'phone' ? (
-            <form onSubmit={sendOtp} className="space-y-4">
-              <div>
-                <label htmlFor="login-phone" className="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
-                <div className="flex">
-                  <span className="inline-flex items-center px-3 bg-slate-100 border border-r-0 border-slate-300 rounded-l-lg text-sm text-slate-500">+91</span>
-                  <input id="login-phone" value={phone} onChange={(e) => { setPhone(e.target.value); setError(''); }}
-                    maxLength={10} placeholder="Enter 10 digit number"
-                    className="flex-1 px-3 py-2.5 border border-slate-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
-                </div>
-                {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
-              </div>
-              <button type="submit" className="w-full py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">Send OTP</button>
-            </form>
-          ) : (
-            <form onSubmit={verifyOtp} className="space-y-4">
-              <div className="text-center mb-2">
-                <p className="text-sm text-slate-600">OTP sent to <span className="font-semibold">+91 {phone}</span></p>
-                <button type="button" onClick={() => setStep('phone')} className="text-xs text-blue-600 hover:underline mt-1">Change number</button>
-              </div>
-              <div>
-                <label htmlFor="login-otp" className="block text-sm font-medium text-slate-700 mb-1">Enter OTP</label>
-                <input id="login-otp" value={otp} onChange={(e) => { setOtp(e.target.value); setError(''); }}
-                  maxLength={4} placeholder="Enter 4 digit OTP"
-                  className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-center tracking-[0.5em] text-lg font-mono" />
-                {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
-              </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-xs text-blue-700 text-center">Demo OTP: <span className="font-bold">1234</span></p>
-              </div>
-              <button type="submit" className="w-full py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">Login</button>
-            </form>
-          )}
-        </div>
-
-        <p className="text-center text-sm text-slate-500 mt-4">
-          New broker? <Link to="/register" className="text-blue-600 font-medium hover:underline">Register Now</Link>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Kargo<span className="text-blue-400">Sathi</span>
+        </h1>
+        <p className="text-slate-400 mt-2 text-sm sm:text-base max-w-md mx-auto">
+          India's smart transport broker platform — connecting shippers, transporters, and drivers
         </p>
+      </div>
+
+      {/* Role cards */}
+      <div className="flex-1 flex items-start justify-center px-4 pb-12">
+        <div className="w-full max-w-4xl">
+          <p className="text-center text-slate-500 text-xs font-medium uppercase tracking-widest mb-6">
+            Select a role to explore the platform
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {roles.map((r, i) => (
+              <button
+                key={r.role}
+                onClick={() => enter(r.role)}
+                className={`group text-left p-5 rounded-2xl border transition-all duration-200 ${r.bg} animate-slide-up`}
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className={`${r.color} mb-3`}>{r.icon}</div>
+                <h3 className="text-lg font-bold text-slate-800 mb-1">{r.label}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed mb-4">{r.desc}</p>
+                <div className={`flex items-center gap-1.5 text-xs font-semibold ${r.color}`}>
+                  <span>Enter Dashboard</span>
+                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <p className="text-center text-slate-600 text-xs mt-8">
+            Demo Mode — No authentication required · Mock data only
+          </p>
+        </div>
       </div>
     </div>
   );
