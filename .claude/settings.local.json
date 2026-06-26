@@ -8,7 +8,8 @@
       "WebSearch",
       "WebFetch(domain:unsplash.com)",
       "Bash(curl:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react';
+import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import type { SortDirection } from '../hooks/useListControls';
 
 interface Column<T> {
   key: string;
   label: string;
   render?: (row: T) => ReactNode;
   className?: string;
+  sortable?: boolean;
 }
 
 interface Props<T> {
@@ -12,6 +15,9 @@ interface Props<T> {
   data: T[];
   onRowClick?: (row: T) => void;
   emptyMessage?: string;
+  sortKey?: string | null;
+  sortDirection?: SortDirection;
+  onSort?: (key: string) => void;
 }
 
 export default function DataTable<T extends Record<string, unknown>>({
@@ -19,6 +25,9 @@ export default function DataTable<T extends Record<string, unknown>>({
   data,
   onRowClick,
   emptyMessage = 'No data available',
+  sortKey,
+  sortDirection,
+  onSort,
 }: Props<T>) {
   if (data.length === 0) {
     return (
@@ -34,14 +43,28 @@ export default function DataTable<T extends Record<string, unknown>>({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50/60">
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  className={`text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider ${col.className ?? ''}`}
-                >
-                  {col.label}
-                </th>
-              ))}
+              {columns.map((col) => {
+                const isSorted = sortKey === col.key;
+                const canSort = col.sortable && onSort;
+                return (
+                  <th
+                    key={col.key}
+                    onClick={canSort ? () => onSort(col.key) : undefined}
+                    className={`text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider ${col.className ?? ''} ${canSort ? 'cursor-pointer select-none hover:text-slate-700' : ''}`}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      {canSort && (
+                        isSorted
+                          ? sortDirection === 'asc'
+                            ? <ArrowUp size={13} className="text-slate-700" />
+                            : <ArrowDown size={13} className="text-slate-700" />
+                          : <ArrowUpDown size={13} className="text-slate-300" />
+                      )}
+                    </span>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">

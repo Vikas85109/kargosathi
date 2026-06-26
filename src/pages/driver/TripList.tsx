@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trips } from '../../mock/data';
 import StatusBadge from '../../components/StatusBadge';
+import ListToolbar from '../../components/ListToolbar';
+import Pagination from '../../components/Pagination';
+import useListControls from '../../hooks/useListControls';
 import { MapPin, Package, Calendar, ChevronRight } from 'lucide-react';
 
 export default function DriverTripList() {
@@ -10,7 +13,14 @@ export default function DriverTripList() {
   const myTrips = trips.filter((t) => t.driverId === 'U004');
   const active = myTrips.filter((t) => t.status !== 'completed');
   const completed = myTrips.filter((t) => t.status === 'completed');
-  const shown = tab === 'active' ? active : completed;
+  const tabData = tab === 'active' ? active : completed;
+
+  const { search, setSearch, page, setPage, totalPages, pageStart, pageEnd, totalItems, paginatedData } =
+    useListControls({
+      data: tabData,
+      searchKeys: ['id', 'origin', 'destination', 'shipperName', 'material'],
+      pageSize: 5,
+    });
 
   return (
     <div className="space-y-5">
@@ -34,50 +44,66 @@ export default function DriverTripList() {
         ))}
       </div>
 
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        placeholder="Search trips..."
+        totalItems={totalItems}
+        itemLabel="trips"
+      />
+
       <div className="space-y-3">
-        {shown.map((trip) => (
-          <div
-            key={trip.id}
-            onClick={() => navigate(`/driver/trip/${trip.id}`)}
-            className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all cursor-pointer group"
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-base font-bold text-slate-900">{trip.id}</p>
-                  <StatusBadge status={trip.status} />
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">{trip.shipperName} · {trip.material}</p>
-              </div>
-              <ChevronRight size={20} className="text-slate-300 group-hover:text-slate-500 transition-colors mt-1" />
-            </div>
-
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex items-center gap-1.5">
-                <MapPin size={14} className="text-emerald-500" />
-                <span className="text-sm text-slate-700">{trip.origin}</span>
-              </div>
-              <div className="flex-1 border-t border-dashed border-slate-300 mx-1" />
-              <div className="flex items-center gap-1.5">
-                <MapPin size={14} className="text-red-500" />
-                <span className="text-sm text-slate-700">{trip.destination}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 text-xs text-slate-500">
-              <div className="flex items-center gap-1">
-                <Package size={12} />
-                <span>{trip.weight}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar size={12} />
-                <span>{trip.startDate}</span>
-              </div>
-              <span className="font-semibold text-slate-700">₹{trip.rate.toLocaleString('en-IN')}</span>
-            </div>
+        {paginatedData.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+            <p className="text-slate-400 text-sm">No trips found</p>
           </div>
-        ))}
+        ) : (
+          paginatedData.map((trip) => (
+            <div
+              key={trip.id}
+              onClick={() => navigate(`/driver/trip/${trip.id}`)}
+              className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all cursor-pointer group"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-base font-bold text-slate-900">{trip.id}</p>
+                    <StatusBadge status={trip.status} />
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">{trip.shipperName} · {trip.material}</p>
+                </div>
+                <ChevronRight size={20} className="text-slate-300 group-hover:text-slate-500 transition-colors mt-1" />
+              </div>
+
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-1.5">
+                  <MapPin size={14} className="text-emerald-500" />
+                  <span className="text-sm text-slate-700">{trip.origin}</span>
+                </div>
+                <div className="flex-1 border-t border-dashed border-slate-300 mx-1" />
+                <div className="flex items-center gap-1.5">
+                  <MapPin size={14} className="text-red-500" />
+                  <span className="text-sm text-slate-700">{trip.destination}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 text-xs text-slate-500">
+                <div className="flex items-center gap-1">
+                  <Package size={12} />
+                  <span>{trip.weight}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar size={12} />
+                  <span>{trip.startDate}</span>
+                </div>
+                <span className="font-semibold text-slate-700">₹{trip.rate.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} pageStart={pageStart} pageEnd={pageEnd} totalItems={totalItems} onPageChange={setPage} />
     </div>
   );
 }

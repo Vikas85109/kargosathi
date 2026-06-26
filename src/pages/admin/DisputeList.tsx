@@ -2,6 +2,9 @@ import { useState } from 'react';
 import DataTable from '../../components/DataTable';
 import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
+import ListToolbar from '../../components/ListToolbar';
+import Pagination from '../../components/Pagination';
+import useListControls from '../../hooks/useListControls';
 import { disputes } from '../../mock/data';
 import { useToast } from '../../context/ToastContext';
 import type { Dispute, DisputeStatus } from '../../types';
@@ -11,17 +14,24 @@ export default function DisputeList() {
   const [selected, setSelected] = useState<Dispute | null>(null);
   const [filter, setFilter] = useState<DisputeStatus | 'all'>('all');
 
-  const filtered = filter === 'all' ? disputes : disputes.filter((d) => d.status === filter);
+  const statusFiltered = filter === 'all' ? disputes : disputes.filter((d) => d.status === filter);
+
+  const { search, setSearch, sortKey, sortDirection, setSort, page, setPage, totalPages, pageStart, pageEnd, totalItems, paginatedData } =
+    useListControls({
+      data: statusFiltered,
+      searchKeys: ['id', 'tripId', 'type', 'raisedBy', 'against'],
+      pageSize: 10,
+    });
 
   const columns = [
     { key: 'id', label: 'ID', render: (r: Dispute) => <span className="font-semibold text-slate-900">{r.id}</span> },
     { key: 'tripId', label: 'Trip' },
-    { key: 'type', label: 'Type', render: (r: Dispute) => <span className="font-medium">{r.type}</span> },
+    { key: 'type', label: 'Type', sortable: true, render: (r: Dispute) => <span className="font-medium">{r.type}</span> },
     { key: 'raisedBy', label: 'Raised By' },
     { key: 'against', label: 'Against' },
-    { key: 'amount', label: 'Amount', render: (r: Dispute) => r.amount ? `₹${r.amount.toLocaleString('en-IN')}` : '—' },
+    { key: 'amount', label: 'Amount', sortable: true, render: (r: Dispute) => r.amount ? `₹${r.amount.toLocaleString('en-IN')}` : '—' },
     { key: 'status', label: 'Status', render: (r: Dispute) => <StatusBadge status={r.status} /> },
-    { key: 'createdAt', label: 'Created' },
+    { key: 'createdAt', label: 'Created', sortable: true },
   ];
 
   return (
@@ -45,11 +55,24 @@ export default function DisputeList() {
         ))}
       </div>
 
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        placeholder="Search disputes..."
+        totalItems={totalItems}
+        itemLabel="disputes"
+      />
+
       <DataTable
         columns={columns}
-        data={filtered as unknown as Record<string, unknown>[]}
+        data={paginatedData as unknown as Record<string, unknown>[]}
         onRowClick={(row) => setSelected(row as unknown as Dispute)}
+        sortKey={sortKey as string | null}
+        sortDirection={sortDirection}
+        onSort={(key) => setSort(key as keyof Dispute)}
       />
+
+      <Pagination page={page} totalPages={totalPages} pageStart={pageStart} pageEnd={pageEnd} totalItems={totalItems} onPageChange={setPage} />
 
       <Modal open={!!selected} onClose={() => setSelected(null)} title={`Dispute ${selected?.id ?? ''}`} width="max-w-xl">
         {selected && (

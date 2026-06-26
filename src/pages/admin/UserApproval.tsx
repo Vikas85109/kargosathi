@@ -2,6 +2,9 @@ import { useState } from 'react';
 import DataTable from '../../components/DataTable';
 import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
+import ListToolbar from '../../components/ListToolbar';
+import Pagination from '../../components/Pagination';
+import useListControls from '../../hooks/useListControls';
 import { users } from '../../mock/data';
 import { useToast } from '../../context/ToastContext';
 import type { User } from '../../types';
@@ -11,21 +14,28 @@ export default function UserApproval() {
   const [selected, setSelected] = useState<User | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'active' | 'suspended'>('all');
 
-  const filtered = filter === 'all' ? users : users.filter((u) => u.status === filter);
+  const statusFiltered = filter === 'all' ? users : users.filter((u) => u.status === filter);
+
+  const { search, setSearch, sortKey, sortDirection, setSort, page, setPage, totalPages, pageStart, pageEnd, totalItems, paginatedData } =
+    useListControls({
+      data: statusFiltered,
+      searchKeys: ['id', 'name', 'email', 'company', 'role'],
+      pageSize: 10,
+    });
 
   const columns = [
     { key: 'id', label: 'ID', render: (r: User) => <span className="font-semibold text-slate-900">{r.id}</span> },
-    { key: 'name', label: 'Name', render: (r: User) => (
+    { key: 'name', label: 'Name', sortable: true, render: (r: User) => (
       <div>
         <p className="font-medium text-slate-800">{r.name}</p>
         <p className="text-xs text-slate-500">{r.email}</p>
       </div>
     )},
-    { key: 'role', label: 'Role', render: (r: User) => <span className="capitalize">{r.role}</span> },
+    { key: 'role', label: 'Role', sortable: true, render: (r: User) => <span className="capitalize">{r.role}</span> },
     { key: 'company', label: 'Company', render: (r: User) => r.company || '—' },
     { key: 'status', label: 'Status', render: (r: User) => <StatusBadge status={r.status} /> },
     { key: 'kycStatus', label: 'KYC', render: (r: User) => <StatusBadge status={r.kycStatus} /> },
-    { key: 'createdAt', label: 'Joined' },
+    { key: 'createdAt', label: 'Joined', sortable: true },
   ];
 
   return (
@@ -49,11 +59,24 @@ export default function UserApproval() {
         ))}
       </div>
 
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        placeholder="Search users..."
+        totalItems={totalItems}
+        itemLabel="users"
+      />
+
       <DataTable
         columns={columns}
-        data={filtered as unknown as Record<string, unknown>[]}
+        data={paginatedData as unknown as Record<string, unknown>[]}
         onRowClick={(row) => setSelected(row as unknown as User)}
+        sortKey={sortKey as string | null}
+        sortDirection={sortDirection}
+        onSort={(key) => setSort(key as keyof User)}
       />
+
+      <Pagination page={page} totalPages={totalPages} pageStart={pageStart} pageEnd={pageEnd} totalItems={totalItems} onPageChange={setPage} />
 
       <Modal open={!!selected} onClose={() => setSelected(null)} title={`User: ${selected?.name ?? ''}`}>
         {selected && (

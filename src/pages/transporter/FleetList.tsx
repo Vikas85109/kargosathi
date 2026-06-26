@@ -1,12 +1,30 @@
 import { Truck, AlertTriangle, CheckCircle2, Wrench, CircleDot } from 'lucide-react';
 import MetricCard from '../../components/MetricCard';
 import StatusBadge from '../../components/StatusBadge';
+import ListToolbar from '../../components/ListToolbar';
+import Pagination from '../../components/Pagination';
+import useListControls from '../../hooks/useListControls';
 import { trucks } from '../../mock/data';
+import type { Truck as TruckType } from '../../types';
+
+const sortOptions = [
+  { label: 'Number', key: 'number' },
+  { label: 'Type', key: 'type' },
+  { label: 'Driver', key: 'driver' },
+  { label: 'Location', key: 'location' },
+];
 
 export default function FleetList() {
   const myTrucks = trucks.filter((t) => t.ownerId === 'U003');
   const available = myTrucks.filter((t) => t.status === 'available').length;
   const onTrip = myTrucks.filter((t) => t.status === 'on_trip').length;
+
+  const { search, setSearch, sortKey, setSort, page, setPage, totalPages, pageStart, pageEnd, totalItems, paginatedData } =
+    useListControls({
+      data: myTrucks,
+      searchKeys: ['number', 'type', 'driver', 'location'],
+      pageSize: 6,
+    });
 
   return (
     <div className="space-y-6">
@@ -22,8 +40,19 @@ export default function FleetList() {
         <MetricCard label="Maintenance" value={myTrucks.filter((t) => t.status === 'maintenance').length} icon={<Wrench size={20} />} color="amber" />
       </div>
 
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        placeholder="Search trucks..."
+        totalItems={totalItems}
+        itemLabel="trucks"
+        sortOptions={sortOptions}
+        sortKey={sortKey as string ?? ''}
+        onSortChange={(key) => setSort(key as keyof TruckType)}
+      />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {myTrucks.map((truck) => (
+        {paginatedData.map((truck) => (
           <div key={truck.id} className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -74,6 +103,14 @@ export default function FleetList() {
           </div>
         ))}
       </div>
+
+      {paginatedData.length === 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+          <p className="text-slate-400 text-sm">No trucks match your search</p>
+        </div>
+      )}
+
+      <Pagination page={page} totalPages={totalPages} pageStart={pageStart} pageEnd={pageEnd} totalItems={totalItems} onPageChange={setPage} />
     </div>
   );
 }
