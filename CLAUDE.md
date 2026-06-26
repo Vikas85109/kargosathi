@@ -13,11 +13,11 @@ No linter, formatter, or test runner is configured.
 
 ## Architecture
 
-KargoSathi is a **multi-role transport broker SaaS prototype** (frontend-only, demo/pitch purposes). Five user roles: **broker**, **shipper**, **transporter**, **driver**, **admin**. All data is static mock data — no backend, no localStorage persistence.
+KargoSathi is a **public-facing transport brokerage & logistics website** (frontend-only, demo/pitch prototype). It markets the brand and exposes self-serve tools: transporter discovery, truck-owner directory, fare calculator, live shipment tracking, enquiry/quote capture, invoice management, and an analytics dashboard. All data is static mock data — no backend.
 
 ### Tech Stack
 
-React 19 + TypeScript + Vite 7 + Tailwind CSS 4 (via `@tailwindcss/vite` plugin). React Router v7 with `createBrowserRouter`. Recharts for charts. Lucide React for icons. `react-hook-form` + `zod` are installed but not yet used (forms currently use plain `useState`).
+React 19 + TypeScript + Vite 7 + Tailwind CSS 4 (via `@tailwindcss/vite` plugin). React Router v7 with `createBrowserRouter` (routes are `lazy`-loaded). **Redux Toolkit** + react-redux for global state (theme, enquiries, notifications). Recharts for dashboard charts. Lucide React for icons. `react-hook-form` + `zod` power the Enquiry and Contact forms. A legacy `ToastContext` provides toasts.
 
 ### Path Alias
 
@@ -27,36 +27,41 @@ React 19 + TypeScript + Vite 7 + Tailwind CSS 4 (via `@tailwindcss/vite` plugin)
 
 ```
 src/
-  types/index.ts     — All TS interfaces (User, Load, Truck, Trip, Invoice, etc.)
-  mock/data.ts       — Static mock data + option lists (Indian logistics)
-  context/           — AuthContext (role switcher), ToastContext (notifications)
-  components/        — Reusable UI (Sidebar, Topbar, DataTable, MetricCard, Modal, etc.)
-  layouts/           — DashboardLayout (sidebar + topbar + outlet, role-aware)
-  pages/             — Role-prefixed page dirs: broker/, shipper/, transporter/, driver/, admin/
-  routes/index.tsx   — All routes organized by role prefix
+  types/index.ts        — All domain TS interfaces (Transporter, TruckOwner, Booking, Invoice, TrackingRecord, Enquiry, …)
+  data/
+    constants.ts        — Cities, states, truck types, service labels, distance matrix, truck specs, getDistance()
+    index.ts            — Deterministically generated mock datasets + marketing content + chart data + getById helpers
+  redux/                — store.ts (typed hooks), themeSlice, enquirySlice, notificationSlice
+  context/ToastContext  — Toast notifications (useToast)
+  utils/index.ts        — formatINR, formatINRShort, formatDate, calculateFare, downloadCSV, cx
+  hooks/                — useCountUp (scroll-triggered counters)
+  components/
+    common/             — Button, Card, Badge/StatusBadge, Section/Container/SectionHeading, Field (Input/Select/Textarea/Label),
+                          DataTable, StarRating, Skeleton, EmptyState, Breadcrumbs, MapPlaceholder, Icon, StatCounter
+    layout/             — Navbar, Footer, PublicLayout (Outlet + Suspense + dark-mode effect), PageHeader
+  pages/                — Home, About, Transporters(+Detail), TruckOwners(+Detail), FareCalculator,
+                          LiveTracking, Enquiry, Invoices(+InvoiceDetail), Contact, Dashboard, NotFound
+  routes/index.tsx      — Single PublicLayout route with all pages as children (lazy)
 ```
 
 ### Key Architectural Patterns
 
-**Auth flow:** No real auth. `AuthContext.login(role)` maps role → preset mock user ID. `DashboardLayout` guards routes by checking `isAuthenticated` and matching the `role` prop against `useAuth().role`, redirecting to `/` on mismatch.
+**Routing:** One `PublicLayout` parent route wraps all pages. All pages except `Home` are `React.lazy` + `<Suspense>` (in PublicLayout) — this keeps Recharts isolated to the Dashboard chunk. Detail routes (`/transporters/:id`, `/truck-owners/:id`, `/invoices/:id`) render `<NotFound />` when the id is missing.
 
-**Navigation config:** `DashboardLayout` contains a `navConfig` record keyed by `UserRole`. Each role's sidebar nav items are defined here — this is the single source of truth for sidebar navigation. When adding a new page, you must add its route in `routes/index.tsx` AND its nav entry in `DashboardLayout`'s `navConfig`.
+**Global state (Redux):** `useAppSelector` / `useAppDispatch` are the typed hooks in `redux/store.ts`. `themeSlice` persists light/dark to `localStorage` (`ks-theme`); `PublicLayout` toggles the `dark` class on `<html>`. `enquirySlice` seeds from `data` and prepends new submissions. `notificationSlice` feeds the navbar bell.
 
-**Routing:** Flat route definitions in `routes/index.tsx`. Each role group is a layout route with `<DashboardLayout role="...">` as element and child page routes beneath it. One dynamic route exists: `/driver/trip/:id`.
+**Dark mode:** Class-based via `@custom-variant dark` in `index.css`. Toggle from the navbar.
 
-**Toasts:** `useToast().toast(type, message)` — types are `'success' | 'error' | 'warning' | 'info'`. Auto-dismiss after 3.5s.
+**Mock data:** `data/index.ts` generates all records deterministically with a seeded RNG (`rng(seed)`) so output is stable across reloads. Marketing content (services, testimonials, faqs, leadership, milestones, stats) also lives here. Fare math is in `utils/calculateFare` using `constants.getDistance` + `TRUCK_SPECS`.
 
-**Forms:** Pages use plain `useState` + controlled inputs. `react-hook-form` and `zod` are available as dependencies if more complex validation is needed.
+**Forms:** Enquiry & Contact use `react-hook-form` + `zod` (`zodResolver`). Other inputs use the shared `Field` components.
 
-### Mock Data (`mock/data.ts`)
+**Reusable table:** `components/common/DataTable` handles sorting, pagination, row-click, and empty state. CSV export via `utils/downloadCSV`.
 
-Exports arrays: `users`, `loads`, `trucks`, `trips`, `invoices`, `payments`, `disputes`, `notifications`, `chartData`. Also exports select options: `truckTypeOptions`, `materialOptions`, `cityOptions`. All data uses realistic Indian logistics context (cities, truck types, GST, freight rates).
+**Cross-page flow:** Home hero search → `/fare-calculator?from=&to=&truck=` (auto-calculates). Navbar search → `/tracking?q=`. Both read `useSearchParams`.
 
-### Custom CSS (`index.css`)
+### Design System (`index.css`)
 
-Tailwind 4 imported via `@import "tailwindcss"`. Custom animation utility classes available: `.animate-fade-in`, `.animate-slide-in`, `.animate-slide-up`, `.animate-pulse-dot`.
+Tailwind 4 `@theme` tokens: `brand-*` (#0F4C81 primary), `accent-*` (#FF6B35 secondary), `success-*` (#22C55E). Custom animation utilities (`animate-fade-in/slide-up/float/truck`, `.delay-*`), `.glass` (glassmorphism), `.skeleton`, `.text-gradient`, `.bg-grid`, and print styles for invoices (`.no-print`, `.print-area`).
 
-### Color Conventions
-
-- Slate-900 → Sidebar | Blue-600 → Broker | Violet-600 → Shipper | Teal-600 → Transporter | Orange-500 → Driver | Indigo-600 → Admin
-- Emerald → Success/Paid/Verified | Amber → Pending/Warning | Red → Error/Cancelled | Blue → Info/Processing
+When adding a page: create it in `pages/`, add a `lazy` import + route in `routes/index.tsx`, and add a nav entry in `components/layout/Navbar.tsx` (`NAV` array) if it's a top-level page.

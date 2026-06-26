@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KargoSathi — Client Pitch & Demo Script</title>
+<style>
+  :root{
+    --navy:#0F4C81; --navy-d:#0a2f50; --orange:#FF6B35; --green:#22C55E;
+    --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @page{size:A4;margin:0;}
+  body{font-family:'Segoe UI',Inter,system-ui,Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.5;font-size:12.5px;}
+  .page{width:210mm;height:297mm;padding:14mm 15mm;margin:0 auto;background:#fff;position:relative;overflow:hidden;page-break-after:always;}
+  .page:last-child{page-break-after:avoid;}
+
+  /* Cover */
+  .cover{background:linear-gradient(135deg,var(--navy-d),var(--navy) 55%,#1d5a96);color:#fff;}
+  .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:34px 34px;}
+  .cover-inner{position:relative;display:flex;flex-direction:column;height:265mm;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--navy),#2f74b5);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.3);}
+  .logo svg{width:30px;height:30px;}
+  .brand-name{font-size:26px;font-weight:800;letter-spacing:-.5px;}
+  .brand-name span{color:var(--orange);}
+  .brand-sub{font-size:11px;color:#bcd3ea;letter-spacing:.5px;}
+  .cover-mid{margin-top:auto;}
+  .pill{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:6px 14px;border-radius:999px;font-size:11px;font-weight:600;}
+  h1.cover-title{font-size:42px;line-height:1.05;font-weight:800;letter-spacing:-1px;margin:18px 0 14px;}
+  h1.cover-title em{color:var(--orange);font-style:normal;}
+  .cover-tag{font-size:15px;color:#dbe9f6;max-width:150mm;font-style:italic;}
+  .cover-foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(255,255,255,.18);padding-top:14px;font-size:11px;color:#cfe0f0;}
+  .doc-type{font-size:12px;font-weight:700;color:#fff;background:var(--orange);padding:6px 12px;border-radius:8px;}
+
+  /* Content */
+  .eyebrow{color:var(--orange);font-weight:800;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+  h2.sec{font-size:19px;font-weight:800;color:var(--navy);margin:3px 0 10px;letter-spacing:-.3px;display:flex;align-items:center;gap:9px;}
+  .num{flex:0 0 26px;height:26px;width:26px;border-radius:8px;background:var(--navy);color:#fff;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;}
+  h3{font-size:13px;font-weight:700;color:var(--navy);margin:10px 0 3px;}
+  p{margin-bottom:7px;}
+  .say{border-left:4px solid var(--orange);background:var(--bg);padding:9px 14px;border-radius:0 9px 9px 0;color:#0f3a63;margin:6px 0 10px;font-size:12px;}
+  .say::before{content:"\201C ";} .say::after{content:" \201D";}
+  .muted{color:var(--muted);}
+  ul{margin:5px 0 9px 0;padding-left:0;list-style:none;}
+  li{position:relative;padding-left:18px;margin-bottom:5px;font-size:12px;}
+  li::before{content:"";position:absolute;left:0;top:5px;width:8px;height:8px;border-radius:2px;background:var(--navy);}
+  .sub li::before{background:#94a3b8;}
+
+  .block{border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin-bottom:9px;background:#fff;}
+  .block h3{margin-top:0;}
+  .strong-tag{display:inline-block;background:#fff3ed;color:var(--orange);border:1px solid #ffd9c7;font-size:9.5px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
+
+  .feat li{padding-left:20px;font-size:12.5px;}
+  .feat li::before{content:"\2714";background:none;color:var(--green);font-weight:800;top:0;width:auto;height:auto;border-radius:0;}
+
+  .tech{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;}
+  .tag{background:#eef5fb;color:var(--navy);border:1px solid #d4e4f3;padding:4px 10px;border-radius:999px;font-size:10.5px;font-weight:600;}
+
+  .qa{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 14px;margin-bottom:7px;font-size:12px;}
+  .qa .q{color:var(--navy);font-weight:700;}
+  .qa .a{color:#334155;}
+  .qa .a::before{content:"\2192 ";color:var(--orange);font-weight:800;}
+
+  .cta-box{background:linear-gradient(135deg,var(--navy),#1d5a96);color:#fff;border-radius:14px;padding:18px 22px;margin-top:10px;}
+  .cta-box h3{color:#fff;font-size:16px;margin:0 0 5px;}
+  .cta-box p{color:#dbe9f6;margin:0;font-size:12.5px;font-style:italic;}
+
+  .contact{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;}
+  .contact .c{border:1px solid var(--line);border-radius:11px;padding:10px 13px;}
+  .contact .c .k{font-size:9.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700;}
+  .contact .c .v{font-size:12px;font-weight:600;color:var(--ink);margin-top:3px;word-break:break-word;}
+
+  .pgfoot{position:absolute;bottom:9mm;left:15mm;right:15mm;display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;border-top:1px solid var(--line);padding-top:6px;}
+  .pgfoot b{color:var(--navy);}
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 — COVER ============ -->
+<section class="page cover">
+  <div class="grid-bg"></div>
+  <div class="cover-inner">
+    <div class="brand">
+      <span class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+      </span>
+      <div>
+        <div class="brand-name">Kargo<span>Sathi</span></div>
+        <div class="brand-sub">SMART LOGISTICS NETWORK</div>
+      </div>
+    </div>
+
+    <div class="cover-mid">
+      <span class="pill">Client Presentation · 2026</span>
+      <h1 class="cover-title">Client Pitch &amp; <em>Demo Script</em></h1>
+      <p class="cover-tag">"Your Trusted Partner in Smart Transportation &amp; Logistics"</p>
+    </div>
+
+    <div class="cover-foot">
+      <div><div class="doc-type">READY-TO-USE PITCH + DEMO SCRIPT</div></div>
+      <div style="text-align:right">
+        Shubham Sharma<br/>
+        shubham.sharma6803@gmail.com · +91 96430 45449
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page">
+  <p class="muted" style="margin-bottom:12px;">Yahan ek ready-to-use client pitch + demo script hai — <b>jaise-jaise screen pe dikhao, waise-waise bolo.</b></p>
+
+  <h2 class="sec"><span class="num">1</span> Opening Line <span class="strong-tag">30 SEC</span></h2>
+  <div class="say">Sir, ye hai KargoSathi — India ka smart transport &amp; logistics network. Ye ek aisa platform hai jo customers, transporters, fleet owners aur truck operators ko ek jagah connect karta hai. Jaise OLA/Uber trucks ke liye — verified transporters, live tracking, instant freight rates, sab kuch ek website pe.</div>
+  <p class="muted">Tagline highlight karo: <b style="color:var(--navy)">"Your Trusted Partner in Smart Transportation &amp; Logistics."</b></p>
+
+  <h2 class="sec" style="margin-top:14px"><span class="num">2</span> Demo Flow <span class="strong-tag">PAGE-BY-PAGE</span></h2>
+
+  <div class="block">
+    <h3>🏠 Home Page se start karo</h3>
+    <ul class="sub">
+      <li>Hero section dikhao.</li>
+    </ul>
+    <div class="say">Yahan customer turant pickup city, delivery city, truck type select karke instant freight estimate le sakta hai.</div>
+    <ul class="sub">
+      <li>Neeche scroll karo → Services (FTL, PTL, Container, Express…), animated stats (10,000+ trucks), testimonials, FAQ.</li>
+    </ul>
+    <div class="say">Ye sab ek professional corporate website jaisa feel deta hai.</div>
+  </div>
+
+  <div class="block">
+    <h3>🔗 Live Brokerage Flow <span class="strong-tag">SABSE STRONG POINT</span></h3>
+    <ul class="sub">
+      <li><b>Transporters</b> page → filters use karke (state, city, fleet size) ek transporter dhoondo.</li>
+      <li><b>View Profile</b> → uski rating, documents, reviews, routes dikhao.</li>
+      <li><b>Request a Quote</b> dabao →</li>
+    </ul>
+    <div class="say">Dekhiye sir, form automatically pre-fill ho gaya — transporter ka naam, city sab. Customer ko dobara type nahi karna padta.</div>
+    <ul class="sub"><li><b>Submit</b> karo → upar notification bell baj gayi + niche table me enquiry aa gayi.</li></ul>
+    <div class="say">Ye real-time lag raha hai.</div>
+  </div>
+
+  <div class="block">
+    <h3>🧮 Fare Calculator</h3>
+    <p>Koi route + truck daalo → full breakdown dikhao (base fare, fuel, toll, driver, GST).</p>
+    <div class="say">Transparent pricing — koi hidden charge nahi.</div>
+  </div>
+
+  <div class="pgfoot"><span><b>KargoSathi</b> · Client Pitch &amp; Demo Script</span><span>Page 2</span></div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page">
+  <div class="block">
+    <h3>📍 Live Tracking</h3>
+    <p>Ek Booking ID daalo → map pe truck move karta hua, status timeline (Booking → Pickup → In Transit → Delivered), ETA, driver details.</p>
+  </div>
+
+  <div class="block">
+    <h3>🧾 Invoices</h3>
+    <p>Ek invoice kholo → GST-compliant invoice → Print / Download PDF / Share buttons dikhao.</p>
+  </div>
+
+  <div class="block">
+    <h3>📊 Dashboard</h3>
+    <div class="say">Aur ye raha business owner ke liye analytics — revenue charts, shipment trends, truck utilization. Sab Recharts se live graphs.</div>
+  </div>
+
+  <div class="block">
+    <h3>✨ Last me Wow-factor</h3>
+    <p>Top-right <b>dark mode toggle</b> dabao → poori website instantly dark theme me.</p>
+    <div class="say">Modern look, mobile pe bhi fully responsive.</div>
+  </div>
+
+  <h2 class="sec" style="margin-top:14px"><span class="num">3</span> Key Selling Points <span class="strong-tag">YE ZAROOR BOLO</span></h2>
+  <ul class="feat">
+    <li><b>9 complete modules</b> — Home, About, Transporters, Truck Owners, Fare Calculator, Live Tracking, Enquiry, Invoices, Contact + Dashboard</li>
+    <li><b>Connected end-to-end flow</b> — quote se booking se tracking se invoice tak</li>
+    <li><b>Realistic Indian data</b> — actual cities, truck types, GST, freight rates</li>
+    <li>Dark/Light mode, global search, CSV export, notifications, breadcrumbs, 404 page</li>
+    <li><b>Modern tech stack</b> — React 19, Redux Toolkit, Tailwind 4 <span class="muted">(credibility ke liye mention karo)</span></li>
+    <li>Fully mobile responsive</li>
+  </ul>
+  <div class="tech">
+    <span class="tag">React 19</span><span class="tag">TypeScript</span><span class="tag">Redux Toolkit</span>
+    <span class="tag">Tailwind CSS 4</span><span class="tag">Recharts</span><span class="tag">React Hook Form + Zod</span><span class="tag">Vite</span>
+  </div>
+
+  <div class="pgfoot"><span><b>KargoSathi</b> · Client Pitch &amp; Demo Script</span><span>Page 3</span></div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page">
+  <h2 class="sec"><span class="num">4</span> Closing Line</h2>
+  <div class="say">Sir, abhi ye frontend prototype hai mock data ke saath — pitch aur demo ke liye fully ready. Approval mile to hum ise real backend, payment gateway, GPS tracking aur transporter logins ke saath production me le ja sakte hain.</div>
+
+  <h2 class="sec" style="margin-top:16px"><span class="num">5</span> Agar Client Ye Poochhe…</h2>
+  <div class="qa"><div class="q">"Data real hai?"</div><div class="a">Abhi demo data hai; backend connect hone pe live ho jayega.</div></div>
+  <div class="qa"><div class="q">"Transporter/driver ka apna login?"</div><div class="a">Phase 2 me role-based portals add kar sakte hain — architecture already ready hai.</div></div>
+  <div class="qa"><div class="q">"Mobile app?"</div><div class="a">Website responsive hai; same React codebase se app bhi bana sakte hain.</div></div>
+
+  <div class="cta-box">
+    <h3>Move Your Cargo with Confidence</h3>
+    <p>Pro tip: Demo se pehle <b>npm run dev</b> chala ke browser ready rakhna, aur ek transporter + ek Booking ID pehle se note kar lena taaki demo smooth chale.</p>
+  </div>
+
+  <div class="contact">
+    <div class="c"><div class="k">Corporate Office</div><div class="v">Smart World Gems, Sector 89, Gurgaon</div></div>
+    <div class="c"><div class="k">Phone</div><div class="v">+91 96430 45449</div></div>
+    <div class="c"><div class="k">Email</div><div class="v">shubham.sharma6803@gmail.com</div></div>
+  </div>
+
+  <div class="pgfoot"><span><b>KargoSathi</b> · Your Trusted Partner in Smart Transportation &amp; Logistics</span><span>Page 4</span></div>
+</section>
+
+</body>
+</html>

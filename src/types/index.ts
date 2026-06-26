@@ -1,144 +1,189 @@
-export type UserRole = 'broker' | 'shipper' | 'transporter' | 'driver' | 'admin';
+// ===== KARGOSATHI domain types =====
 
-export interface User {
+export type ServiceType =
+  | 'FTL'
+  | 'PTL'
+  | 'Container'
+  | 'Express'
+  | 'Industrial'
+  | 'Warehouse';
+
+export type TruckType =
+  | 'Tata Ace'
+  | 'Pickup'
+  | 'Mini Truck'
+  | '14 Feet Truck'
+  | '17 Feet Truck'
+  | '22 Feet Truck'
+  | 'Trailer'
+  | 'Container';
+
+export type VerificationStatus = 'Verified' | 'Pending' | 'Unverified';
+export type DocStatus = 'Valid' | 'Expiring' | 'Expired';
+
+export interface Review {
+  id: string;
+  author: string;
+  rating: number;
+  date: string;
+  comment: string;
+}
+
+export interface Transporter {
   id: string;
   name: string;
-  role: UserRole;
-  email: string;
+  logo: string; // initials / emoji placeholder
+  contactPerson: string;
   phone: string;
-  company?: string;
-  status: 'active' | 'pending' | 'suspended';
-  kycStatus: 'verified' | 'pending' | 'rejected';
-  createdAt: string;
+  email: string;
+  state: string;
+  city: string;
+  fleetSize: number;
+  serviceTypes: ServiceType[];
+  operatingRoutes: string[];
+  rating: number;
+  reviewsCount: number;
+  verified: VerificationStatus;
+  established: number;
+  about: string;
+  serviceAreas: string[];
+  documents: { name: string; status: DocStatus; expiry: string }[];
+  reviews: Review[];
 }
 
-export type LoadStatus = 'posted' | 'assigned' | 'in_transit' | 'delivered' | 'cancelled';
-export type TripStatus = 'scheduled' | 'pickup' | 'in_transit' | 'delivered' | 'completed';
-export type PaymentStatus = 'pending' | 'processing' | 'paid' | 'overdue';
-export type DisputeStatus = 'open' | 'investigating' | 'resolved' | 'closed';
-
-export interface Load {
+export interface TruckOwner {
   id: string;
-  shipperName: string;
-  shipperId: string;
-  origin: string;
-  destination: string;
-  distance: string;
-  weight: string;
-  material: string;
-  truckType: string;
-  rate: number;
-  status: LoadStatus;
-  postedDate: string;
-  deliveryDate: string;
-  assignedTruck?: string;
-  assignedDriver?: string;
-  brokerCommission: number;
-  gstAmount: number;
-}
-
-export interface Truck {
-  id: string;
-  number: string;
-  type: string;
-  capacity: string;
-  owner: string;
-  ownerId: string;
-  driver: string;
-  driverId: string;
-  status: 'available' | 'on_trip' | 'maintenance' | 'inactive';
-  location: string;
-  insuranceExpiry: string;
-  fitnessExpiry: string;
-}
-
-export interface TripEvent {
-  status: string;
-  location: string;
-  timestamp: string;
-  note?: string;
-}
-
-export interface Trip {
-  id: string;
-  loadId: string;
-  truckId: string;
-  driverId: string;
-  origin: string;
-  destination: string;
-  status: TripStatus;
-  startDate: string;
-  estimatedDelivery: string;
-  actualDelivery?: string;
-  currentLocation: string;
-  distance: string;
-  shipperName: string;
+  ownerName: string;
+  mobile: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  truckType: TruckType;
+  vehicleNumber: string;
   driverName: string;
-  truckNumber: string;
+  insuranceStatus: DocStatus;
+  permitStatus: DocStatus;
+  fitnessStatus: DocStatus;
+  rcNumber: string;
+  capacityTons: number;
+  modelYear: number;
+  revenue: number;
+  assignedTrips: number;
+  rating: number;
+}
+
+export type BookingStatus =
+  | 'Booking Confirmed'
+  | 'Vehicle Assigned'
+  | 'Pickup Completed'
+  | 'In Transit'
+  | 'Near Destination'
+  | 'Delivered'
+  | 'Cancelled';
+
+export interface Booking {
+  id: string; // booking id
+  lrNumber: string;
+  customer: string;
+  source: string;
+  destination: string;
+  truckType: TruckType;
   material: string;
-  weight: string;
-  rate: number;
-  timeline: TripEvent[];
+  weight: number; // tons
+  amount: number;
+  status: BookingStatus;
+  bookingDate: string;
+  transporterId: string;
+  vehicleNumber: string;
+}
+
+export interface TrackingEvent {
+  status: BookingStatus;
+  location: string;
+  time: string;
+  done: boolean;
+}
+
+export interface TrackingRecord {
+  id: string;
+  bookingId: string;
+  lrNumber: string;
+  vehicleNumber: string;
+  driverName: string;
+  driverPhone: string;
+  currentLocation: string;
+  lastUpdated: string;
+  eta: string;
+  source: string;
+  destination: string;
+  distanceCovered: number; // %
+  status: BookingStatus;
+  timeline: TrackingEvent[];
+}
+
+export type PaymentStatus = 'Paid' | 'Pending' | 'Overdue' | 'Partial';
+
+export interface InvoiceLine {
+  label: string;
+  amount: number;
 }
 
 export interface Invoice {
-  id: string;
-  tripId: string;
-  loadId: string;
-  from: string;
-  to: string;
-  shipperName: string;
-  transporterName: string;
-  baseAmount: number;
-  gst: number;
-  brokerCommission: number;
-  totalAmount: number;
-  status: PaymentStatus;
+  id: string; // invoice number
+  bookingId: string;
+  customer: string;
+  customerAddress: string;
+  customerGstin: string;
   date: string;
   dueDate: string;
-}
-
-export interface Payment {
-  id: string;
-  invoiceId: string;
-  amount: number;
+  lines: InvoiceLine[];
+  amount: number; // taxable
+  gst: number;
+  total: number;
   status: PaymentStatus;
-  method: string;
-  date: string;
-  reference: string;
+  paymentMode: string;
 }
 
-export interface Dispute {
+export type EnquiryStatus =
+  | 'New'
+  | 'Assigned'
+  | 'In Review'
+  | 'Quotation Sent'
+  | 'Confirmed'
+  | 'Closed';
+
+export interface Enquiry {
   id: string;
-  tripId: string;
-  raisedBy: string;
-  against: string;
-  type: string;
-  description: string;
-  status: DisputeStatus;
-  createdAt: string;
-  resolvedAt?: string;
-  amount?: number;
+  customerName: string;
+  company: string;
+  mobile: string;
+  email: string;
+  pickup: string;
+  delivery: string;
+  material: string;
+  weight: string;
+  vehicle: string;
+  message: string;
+  status: EnquiryStatus;
+  date: string;
 }
 
-export interface Notification {
+export interface FareResult {
+  distance: number;
+  baseFare: number;
+  fuelCharges: number;
+  tollCharges: number;
+  driverCharges: number;
+  gst: number;
+  total: number;
+}
+
+export interface AppNotification {
   id: string;
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  time: string;
   read: boolean;
-  timestamp: string;
-}
-
-export interface ChartData {
-  month: string;
-  revenue: number;
-  trips: number;
-  loads: number;
-}
-
-export interface NavItem {
-  label: string;
-  path: string;
-  icon: string;
+  type: 'success' | 'info' | 'warning';
 }
